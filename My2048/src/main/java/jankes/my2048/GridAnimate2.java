@@ -110,9 +110,8 @@ public class GridAnimate2 extends Activity {
     }
 
     public class View2048 extends View implements ValueAnimator.AnimatorUpdateListener {
-
         Random mRand;
-        Grid mGrid;
+        Grid2 mGrid;
         BlockBitmapManager mBlockBitmaps;
         Block[] mBlocks;
         boolean mShifting;
@@ -120,8 +119,8 @@ public class GridAnimate2 extends Activity {
         public View2048(Context context) {
             super(context);
             mRand = new Random(1000);
-            //mGrid = Grid.New(mRand);
-            mGrid = Grid.New(new int[] {
+            //mGrid = Grid2.New(mRand);
+            mGrid = Grid2.New(new int[] {
                     0, 0, 0, 0,
                     2, 2, 0, 0,   // 0 2 2 4
                     0, 0, 0, 0,   // 2 2 4 0
@@ -162,7 +161,120 @@ public class GridAnimate2 extends Activity {
             invalidate();
         }
 
-        @Override
+        private class AnimateUpdateGridEventListener implements Grid2.EventListener {
+            final AnimatorSet[] mAnimators = new AnimatorSet[4];
+            final AnimatorSet.Builder[] mBuilders = new AnimatorSet.Builder[4];
+            ObjectAnimator mNewAnimator;
+
+            public void blockMoved(final int startRow, final int startColumn, final int endRow, final int endColumn) {
+                Log.d(TAG, String.format("blockMoved: (%d, %d) to (%d, %d)", startRow, startColumn, endRow, endColumn));
+
+                final Block block = getBlock(startRow, startColumn);
+                ObjectAnimator moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
+                moveAnimator.setDuration(2000);
+                moveAnimator.addUpdateListener(View2048.this);
+                moveAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        setBlock(endRow, endColumn, block);
+                        setBlock(startRow, startColumn, null);
+                    }
+                });
+
+                int index = endRow - 1;
+                if (mAnimators[index] == null) {
+                    mAnimators[index] = new AnimatorSet();
+                    mBuilders[index] = mAnimators[index].play(moveAnimator);
+                } else {
+                    if (mBuilders[index] != null) {
+                        mBuilders[index] = mBuilders[index].with(moveAnimator);
+                    } else {
+                        AnimatorSet next = new AnimatorSet();
+                        mBuilders[index] = next.play(moveAnimator).after(mAnimators[index]);
+                        mAnimators[index] = next;
+                    }
+                }
+            }
+
+            @Override
+            public void blocksMerged(final int srcRow, final int srcColumn, final int dstRow, final int dstColumn, int newValue) {
+                Log.d(TAG, String.format("blocksMerged: (%d, %d) into (%d, %d) newValue = %d", srcRow, srcColumn, dstRow, dstColumn, newValue));
+
+                final Block newBlock = new Block(columnToX(dstColumn), rowToY(dstRow), mBlockBitmaps.getBitmap(newValue));
+                ObjectAnimator mergeAnimator = ObjectAnimator.ofFloat(newBlock, "scale", 1.0f, 1.25f);
+                mergeAnimator.setDuration(500);
+                mergeAnimator.setRepeatMode(ValueAnimator.REVERSE);
+                mergeAnimator.setRepeatCount(1);
+                mergeAnimator.addUpdateListener(View2048.this);
+                mergeAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        setBlock(srcRow, srcColumn, null);
+                        setBlock(dstRow, dstColumn, newBlock);
+                    }
+                });
+
+                int index = dstRow - 1;
+                if (mAnimators[index] == null) {
+                    AnimatorSet mergePlayer = new AnimatorSet();
+                    mergePlayer.play(mergeAnimator);
+                    mAnimators[index] = mergePlayer;
+                } else {
+                    AnimatorSet next = new AnimatorSet();
+                    next.play(mergeAnimator).after(mAnimators[index]);
+                    mAnimators[index] = next;
+                    mBuilders[index] = null;
+                }
+            }
+
+            @Override
+            public void newBlock(final int row, final int column, int value) {
+                Log.d(TAG, String.format("newBlock: (%d, %d) --> %d", row, column, value));
+
+                final Block newBlock = new Block(columnToX(column), rowToY(row), mBlockBitmaps.getBitmap(value));
+                mNewAnimator = ObjectAnimator.ofFloat(newBlock,"scale", 0.5f, 1.0f);
+                mNewAnimator.setDuration(1000);
+                mNewAnimator.addUpdateListener(View2048.this);
+                mNewAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        setBlock(row, column, newBlock);
+                    }
+                });
+            }
+
+            public AnimatorSet createAnimateUpdatePlayer() {
+                AnimatorSet createUpdate = new AnimatorSet();
+                AnimatorSet moveMergePlayer = createMoveMergePlayer();
+                if (mNewAnimator != null) {
+                    if (moveMergePlayer.getChildAnimations().size() > 0) {
+                        createUpdate.play(moveMergePlayer).before(mNewAnimator);
+                    } else {
+                        createUpdate.play(mNewAnimator);
+                    }
+                } else {
+                    createUpdate.play(moveMergePlayer);
+                }
+                return createUpdate;
+            }
+
+            private AnimatorSet createMoveMergePlayer() {
+                AnimatorSet moveMergePlayer = new AnimatorSet();
+                AnimatorSet.Builder moveMergeBuilder = null;
+                for (int i = 0; i < 4; i++) {
+                    if (mAnimators[i] == null) {
+                        continue;
+                    }
+                    if (moveMergeBuilder == null) {
+                        moveMergeBuilder = moveMergePlayer.play(mAnimators[i]);
+                    } else {
+                        moveMergeBuilder = moveMergeBuilder.with(mAnimators[i]);
+                    }
+                }
+                return moveMergePlayer;
+            }
+        }
+
         public boolean onTouchEvent(MotionEvent event) {
             if (event.getAction() != MotionEvent.ACTION_DOWN &&
                     event.getAction() != MotionEvent.ACTION_MOVE) {
@@ -176,115 +288,16 @@ public class GridAnimate2 extends Activity {
 
             mShifting = true;
 
-            final AnimatorSet[] animators = new AnimatorSet[4];
-            final AnimatorSet.Builder[] builders = new AnimatorSet.Builder[4];
-
-            final ObjectAnimator[] newAnimator = new ObjectAnimator[1];
-
-            final Grid shifted = mGrid.shiftLeft(mRand, new Grid.EventListener() {
-                @Override
-                public void blockMoved(final int startRow, final int startColumn, final int endRow, final int endColumn) {
-                    Log.d(TAG, String.format("blockMoved: (%d, %d) to (%d, %d", startRow, startColumn, endRow, endColumn));
-
-                    final Block block = getBlock(startRow, startColumn);
-                    ObjectAnimator moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
-                    moveAnimator.setDuration(2000);
-                    moveAnimator.addUpdateListener(View2048.this);
-                    moveAnimator.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            setBlock(endRow, endColumn, block);
-                            setBlock(startRow, startColumn, null);
-                        }
-                    });
-
-                    int index = endRow - 1;
-                    if (animators[index] == null) {
-                        animators[index] = new AnimatorSet();
-                        builders[index] = animators[index].play(moveAnimator);
-                    } else {
-                        if (builders[index] != null) {
-                            builders[index] = builders[index].with(moveAnimator);
-                        } else {
-                            AnimatorSet next = new AnimatorSet();
-                            builders[index] = next.play(moveAnimator).after(animators[index]);
-                            animators[index] = next;
-                        }
-                    }
-                }
-
-                @Override
-                public void blocksMerged(final int srcRow, final int srcColumn, final int dstRow, final int dstColumn, int newValue) {
-                    Log.d(TAG, String.format("blocksMerged: (%d, %d) into (%d, %d)", srcRow, srcColumn, dstRow, dstColumn));
-
-                    final Block newBlock = new Block(columnToX(dstColumn), rowToY(dstRow), mBlockBitmaps.getBitmap(newValue));
-                    ObjectAnimator mergeAnimator = ObjectAnimator.ofFloat(newBlock, "scale", 1.0f, 1.25f);
-                    mergeAnimator.setDuration(500);
-                    mergeAnimator.setRepeatMode(ValueAnimator.REVERSE);
-                    mergeAnimator.setRepeatCount(1);
-                    mergeAnimator.addUpdateListener(View2048.this);
-                    mergeAnimator.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationStart(Animator animation) {
-                            setBlock(srcRow, srcColumn, null);
-                            setBlock(dstRow, dstColumn, newBlock);
-                        }
-                    });
-
-                    int index = dstRow - 1;
-                    if (animators[index] == null) {
-                        AnimatorSet mergePlayer = new AnimatorSet();
-                        mergePlayer.play(mergeAnimator);
-                        animators[index] = mergePlayer;
-                    } else {
-                        AnimatorSet next = new AnimatorSet();
-                        next.play(mergeAnimator).after(animators[index]);
-                        animators[index] = next;
-                        builders[index] = null;
-                    }
-                }
-
-                @Override
-                public void newBlock(final int row, final int column, int value) {
-                    Log.d(TAG, String.format("newBlock: (%d, %d) --> %d", row, column, value));
-
-                    final Block newBlock = new Block(columnToX(column), rowToY(row), mBlockBitmaps.getBitmap(value));
-                    newAnimator[0] = ObjectAnimator.ofFloat(newBlock,"scale", 0.5f, 1.0f);
-                    newAnimator[0].setDuration(1000);
-                    newAnimator[0].addUpdateListener(View2048.this);
-                    newAnimator[0].addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationStart(Animator animation) {
-                            setBlock(row, column, newBlock);
-                        }
-                    });
-                }
-            });
+            AnimateUpdateGridEventListener listener = new AnimateUpdateGridEventListener();
+            final Grid2 shifted = mGrid.shiftLeft(mRand, listener);
 
             //
             // can check shifted grid here for win/loss before kicking off any animations
             //
 
-            AnimatorSet moveMergePlayer = new AnimatorSet();
-            AnimatorSet.Builder moveMergeBuilder = null;
-            for (int i = 0; i < 4; i++) {
-                if (animators[i] == null) {
-                    continue;
-                }
-                if (moveMergeBuilder == null) {
-                    moveMergeBuilder = moveMergePlayer.play(animators[i]);
-                } else {
-                    moveMergeBuilder = moveMergeBuilder.with(animators[i]);
-                }
-            }
+            AnimatorSet animateUpdate = listener.createAnimateUpdatePlayer();
 
-            AnimatorSet all = new AnimatorSet();
-            if (moveMergeBuilder != null) {
-                all.play(newAnimator[0]).after(moveMergePlayer);
-            } else {
-                all.play(newAnimator[0]);
-            }
-            all.addListener(new AnimatorListenerAdapter() {
+            animateUpdate.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     mShifting = false;
@@ -294,7 +307,7 @@ public class GridAnimate2 extends Activity {
                     Log.d(TAG, mGrid.toString());
                 }
             });
-            all.start();
+            animateUpdate.start();
 
             return true;
         }
