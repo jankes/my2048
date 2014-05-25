@@ -206,9 +206,7 @@ public class GridAnimate2 extends Activity {
             public void blockMoved(final int startRow, final int startColumn, final int endRow, final int endColumn) {
                 Log.d(TAG, String.format("blockMoved: (%d, %d) to (%d, %d)", startRow, startColumn, endRow, endColumn));
 
-                final Block block = getBlock(startRow, startColumn);
-                ObjectAnimator moveAnimator = createMoveAnimator(block, startRow, startColumn, endRow, endColumn);
-
+                ObjectAnimator moveAnimator = createMoveAnimator(startRow, startColumn, endRow, endColumn);
                 int index = getAnimatorIndex(startRow, startColumn, endRow);
                 if (mAnimators[index] == null) {
                     mAnimators[index] = new AnimatorSet();
@@ -224,7 +222,8 @@ public class GridAnimate2 extends Activity {
                 }
             }
 
-            private ObjectAnimator createMoveAnimator(final Block block, final int startRow, final int startColumn, final int endRow, final int endColumn) {
+            private ObjectAnimator createMoveAnimator(final int startRow, final int startColumn, final int endRow, final int endColumn) {
+                final Block block = getBlock(startRow, startColumn);
                 ObjectAnimator moveAnimator;
                 if (startRow == endRow) {
                     moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
@@ -247,6 +246,21 @@ public class GridAnimate2 extends Activity {
             public void blocksMerged(final int srcRow, final int srcColumn, final int dstRow, final int dstColumn, int newValue) {
                 Log.d(TAG, String.format("blocksMerged: (%d, %d) into (%d, %d) newValue = %d", srcRow, srcColumn, dstRow, dstColumn, newValue));
 
+                ObjectAnimator mergeAnimator = createMergeAnimator(srcRow, srcColumn, dstRow, dstColumn, newValue);
+                int index = getAnimatorIndex(srcRow, srcColumn, dstRow);
+                if (mAnimators[index] == null) {
+                    AnimatorSet mergePlayer = new AnimatorSet();
+                    mergePlayer.play(mergeAnimator);
+                    mAnimators[index] = mergePlayer;
+                } else {
+                    AnimatorSet next = new AnimatorSet();
+                    next.play(mergeAnimator).after(mAnimators[index]);
+                    mAnimators[index] = next;
+                    mBuilders[index] = null;
+                }
+            }
+
+            private ObjectAnimator createMergeAnimator(final int srcRow, final int srcColumn, final int dstRow, final int dstColumn, int newValue) {
                 final Block newBlock = new Block(columnToX(dstColumn), rowToY(dstRow), mBlockBitmaps.getBitmap(newValue));
                 ObjectAnimator mergeAnimator = ObjectAnimator.ofFloat(newBlock, "scale", 1.0f, 1.25f);
                 mergeAnimator.setDuration(500);
@@ -260,18 +274,7 @@ public class GridAnimate2 extends Activity {
                         setBlock(dstRow, dstColumn, newBlock);
                     }
                 });
-
-                int index = getAnimatorIndex(srcRow, srcColumn, dstRow);
-                if (mAnimators[index] == null) {
-                    AnimatorSet mergePlayer = new AnimatorSet();
-                    mergePlayer.play(mergeAnimator);
-                    mAnimators[index] = mergePlayer;
-                } else {
-                    AnimatorSet next = new AnimatorSet();
-                    next.play(mergeAnimator).after(mAnimators[index]);
-                    mAnimators[index] = next;
-                    mBuilders[index] = null;
-                }
+                return mergeAnimator;
             }
 
             private int getAnimatorIndex(int row1, int column1, int row2) {
