@@ -104,10 +104,39 @@ public class GridAnimate2 extends Activity {
                 mValueToBitmap.append(8, bitmap8);
                 return bitmap8;
             } else if (blockValue == 16) {
-
-                Log.e(TAG, "no bitmap for 16 defined yet!");
-                throw new RuntimeException("");
-            } else {
+                Bitmap bitmap16 = BitmapFactory.decodeResource(getResources(), R.drawable.sixteen);
+                mValueToBitmap.append(16, bitmap16);
+                return bitmap16;
+            } else if (blockValue == 32) {
+                Bitmap bitmap32 = BitmapFactory.decodeResource(getResources(), R.drawable.thirtytwo);
+                mValueToBitmap.append(32, bitmap32);
+                return bitmap32;
+            } else if (blockValue == 64) {
+                Bitmap bitmap64 = BitmapFactory.decodeResource(getResources(), R.drawable.sixtyfour);
+                mValueToBitmap.append(64, bitmap64);
+                return bitmap64;
+            } else if (blockValue == 128) {
+                Bitmap bitmap128 = BitmapFactory.decodeResource(getResources(), R.drawable.onetwentyeight);
+                mValueToBitmap.append(128, bitmap128);
+                return bitmap128;
+            } else if (blockValue == 256) {
+                Bitmap bitmap256 = BitmapFactory.decodeResource(getResources(), R.drawable.twofiftysix);
+                mValueToBitmap.append(256, bitmap256);
+                return bitmap256;
+            } else if (blockValue == 512) {
+                Bitmap bitmap512 = BitmapFactory.decodeResource(getResources(), R.drawable.fivetwelve);
+                mValueToBitmap.append(8, bitmap512);
+                return bitmap512;
+            } else if (blockValue == 1024) {
+                Bitmap bitmap1024 = BitmapFactory.decodeResource(getResources(), R.drawable.tentwentyfour);
+                mValueToBitmap.append(1024, bitmap1024);
+                return bitmap1024;
+            } else if (blockValue == 2048) {
+                Bitmap bitmap2048 = BitmapFactory.decodeResource(getResources(), R.drawable.twentyfortyeight);
+                mValueToBitmap.append(8, bitmap2048);
+                return bitmap2048;
+            }
+            else {
                 String msg = "no bitmap for value " + blockValue;
                 Log.e(TAG, msg);
                 throw new RuntimeException(msg);
