@@ -19,6 +19,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Random;
 
 public class GridAnimate2 extends Activity {
@@ -50,6 +52,7 @@ public class GridAnimate2 extends Activity {
             return mX;
         }
 
+        @SuppressWarnings("unused")
         public void setX(float value) {
             mX = value;
         }
@@ -58,6 +61,7 @@ public class GridAnimate2 extends Activity {
             return mY;
         }
 
+        @SuppressWarnings("unused")
         public void setY(float value) {
             mY = value;
         }
@@ -66,6 +70,7 @@ public class GridAnimate2 extends Activity {
             return mScale;
         }
 
+        @SuppressWarnings("unused")
         public void setScale(float value) {
             mScale = value;
         }
@@ -358,7 +363,7 @@ public class GridAnimate2 extends Activity {
         }
 
         @Override
-        public boolean onTouchEvent(MotionEvent event) {
+        public boolean onTouchEvent(@NotNull MotionEvent event) {
             return mGestureDetector.onTouchEvent(event);
         }
 
