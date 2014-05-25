@@ -173,26 +173,9 @@ public class GridAnimate2 extends Activity {
                 Log.d(TAG, String.format("blockMoved: (%d, %d) to (%d, %d)", startRow, startColumn, endRow, endColumn));
 
                 final Block block = getBlock(startRow, startColumn);
-                ObjectAnimator moveAnimator;
-                int index;
-                if (startRow == endRow) {
-                    moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
-                    index = endRow - 1;
-                } else {
-                    moveAnimator = ObjectAnimator.ofFloat(block, "y", block.getY(), rowToY(endRow));
-                    index = endColumn - 1;
-                }
+                ObjectAnimator moveAnimator = createMoveAnimator(block, startRow, startColumn, endRow, endColumn);
 
-                moveAnimator.setDuration(2000);
-                moveAnimator.addUpdateListener(View2048.this);
-                moveAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        setBlock(endRow, endColumn, block);
-                        setBlock(startRow, startColumn, null);
-                    }
-                });
-
+                int index = getAnimatorIndex(startRow, startColumn, endRow);
                 if (mAnimators[index] == null) {
                     mAnimators[index] = new AnimatorSet();
                     mBuilders[index] = mAnimators[index].play(moveAnimator);
@@ -205,6 +188,25 @@ public class GridAnimate2 extends Activity {
                         mAnimators[index] = next;
                     }
                 }
+            }
+
+            private ObjectAnimator createMoveAnimator(final Block block, final int startRow, final int startColumn, final int endRow, final int endColumn) {
+                ObjectAnimator moveAnimator;
+                if (startRow == endRow) {
+                    moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
+                } else {
+                    moveAnimator = ObjectAnimator.ofFloat(block, "y", block.getY(), rowToY(endRow));
+                }
+                moveAnimator.setDuration(2000);
+                moveAnimator.addUpdateListener(View2048.this);
+                moveAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        setBlock(endRow, endColumn, block);
+                        setBlock(startRow, startColumn, null);
+                    }
+                });
+                return moveAnimator;
             }
 
             @Override
@@ -225,12 +227,7 @@ public class GridAnimate2 extends Activity {
                     }
                 });
 
-                int index;
-                if (srcRow == dstRow) {
-                    index = dstRow - 1;
-                } else {
-                    index = dstColumn - 1;
-                }
+                int index = getAnimatorIndex(srcRow, srcColumn, dstRow);
                 if (mAnimators[index] == null) {
                     AnimatorSet mergePlayer = new AnimatorSet();
                     mergePlayer.play(mergeAnimator);
@@ -240,6 +237,14 @@ public class GridAnimate2 extends Activity {
                     next.play(mergeAnimator).after(mAnimators[index]);
                     mAnimators[index] = next;
                     mBuilders[index] = null;
+                }
+            }
+
+            private int getAnimatorIndex(int row1, int column1, int row2) {
+                if (row1 == row2) {
+                    return row1 - 1;
+                } else {
+                    return column1 - 1;
                 }
             }
 
@@ -293,7 +298,6 @@ public class GridAnimate2 extends Activity {
 
         private class UpdateGestureListener extends GestureDetector.SimpleOnGestureListener {
             private static final float SHIFT_FLOOR = 500f;
-            private static final float NO_SHIFT_CEIL = 150f;
 
             @Override
             public boolean onDown(MotionEvent event) {
