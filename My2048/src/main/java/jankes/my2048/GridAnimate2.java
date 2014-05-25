@@ -173,7 +173,16 @@ public class GridAnimate2 extends Activity {
                 Log.d(TAG, String.format("blockMoved: (%d, %d) to (%d, %d)", startRow, startColumn, endRow, endColumn));
 
                 final Block block = getBlock(startRow, startColumn);
-                ObjectAnimator moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
+                ObjectAnimator moveAnimator;
+                int index;
+                if (startRow == endRow) {
+                    moveAnimator = ObjectAnimator.ofFloat(block,"x", block.getX(), columnToX(endColumn));
+                    index = endRow - 1;
+                } else {
+                    moveAnimator = ObjectAnimator.ofFloat(block, "y", block.getY(), rowToY(endRow));
+                    index = endColumn - 1;
+                }
+
                 moveAnimator.setDuration(2000);
                 moveAnimator.addUpdateListener(View2048.this);
                 moveAnimator.addListener(new AnimatorListenerAdapter() {
@@ -184,7 +193,6 @@ public class GridAnimate2 extends Activity {
                     }
                 });
 
-                int index = endRow - 1;
                 if (mAnimators[index] == null) {
                     mAnimators[index] = new AnimatorSet();
                     mBuilders[index] = mAnimators[index].play(moveAnimator);
@@ -217,7 +225,12 @@ public class GridAnimate2 extends Activity {
                     }
                 });
 
-                int index = dstRow - 1;
+                int index;
+                if (srcRow == dstRow) {
+                    index = dstRow - 1;
+                } else {
+                    index = dstColumn - 1;
+                }
                 if (mAnimators[index] == null) {
                     AnimatorSet mergePlayer = new AnimatorSet();
                     mergePlayer.play(mergeAnimator);
@@ -292,23 +305,6 @@ public class GridAnimate2 extends Activity {
                 AnimateUpdateGridEventListener listener = new AnimateUpdateGridEventListener();
 
                 final Grid2 shifted;
-//                if (velocityX < -SHIFT_FLOOR && Math.abs(velocityY) < NO_SHIFT_CEIL) {
-//                    Log.d(TAG, "shift left");
-//                    shifted = mGrid.shiftLeft(mRand, listener);
-//                } else if (velocityY < -SHIFT_FLOOR && Math.abs(velocityX) < NO_SHIFT_CEIL) {
-//                    Log.d(TAG, "shift up");
-//                    shifted = mGrid.shiftUp(mRand, listener);
-//                } else if (velocityX > SHIFT_FLOOR && Math.abs(velocityY) < NO_SHIFT_CEIL) {
-//                    Log.d(TAG, "shift right");
-//                    shifted = mGrid.shiftRight(mRand, listener);
-//                } else if (velocityY > SHIFT_FLOOR && Math.abs(velocityX) < NO_SHIFT_CEIL) {
-//                    Log.d(TAG, "shift down");
-//                    shifted = mGrid.shiftDown(mRand, listener);
-//                } else {
-//                    Log.d(TAG, String.format("no shift: velocityX = %f velocityY = %f", velocityX, velocityY));
-//                    return false;
-//                }
-
                 if (Math.abs(velocityX) < SHIFT_FLOOR && Math.abs(velocityY) < SHIFT_FLOOR) {
                     Log.d(TAG, String.format("no shift: velocityX = %f velocityY = %f", velocityX, velocityY));
                     return false;
@@ -339,19 +335,19 @@ public class GridAnimate2 extends Activity {
                 // can check shifted grid here for win/loss before kicking off any animations
                 //
 
-//                AnimatorSet animateUpdate = listener.createAnimateUpdatePlayer();
-//                animateUpdate.addListener(new AnimatorListenerAdapter() {
-//                    @Override
-//                    public void onAnimationEnd(Animator animation) {
-//                        mShifting = false;
-//                        mGrid = shifted;
-//
-//                        Log.d(TAG, "set new grid:");
-//                        Log.d(TAG, mGrid.toString());
-//                    }
-//                });
-//                mShifting = true;
-//                animateUpdate.start();
+                AnimatorSet animateUpdate = listener.createAnimateUpdatePlayer();
+                animateUpdate.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mShifting = false;
+                        mGrid = shifted;
+
+                        Log.d(TAG, "set new grid:");
+                        Log.d(TAG, mGrid.toString());
+                    }
+                });
+                mShifting = true;
+                animateUpdate.start();
 
                 return true;
             }
