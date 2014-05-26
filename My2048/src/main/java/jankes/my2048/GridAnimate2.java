@@ -93,6 +93,7 @@ public class GridAnimate2 extends Activity {
             return mX;
         }
 
+        // Needed in order to use ValueAnimator for animation
         @SuppressWarnings("unused")
         public void setX(float value) {
             mX = value;
@@ -102,6 +103,7 @@ public class GridAnimate2 extends Activity {
             return mY;
         }
 
+        // Needed in order to use ValueAnimator for animation
         @SuppressWarnings("unused")
         public void setY(float value) {
             mY = value;
@@ -111,6 +113,7 @@ public class GridAnimate2 extends Activity {
             return mScale;
         }
 
+        // Needed in order to use ValueAnimator for animation
         @SuppressWarnings("unused")
         public void setScale(float value) {
             mScale = value;
