@@ -29,8 +29,10 @@ public class GridAnimate2 extends Activity {
     private static final String TAG = "My2048";
 
     private Random mRand;
-    private boolean mGameWon;
     private Grid2 mGrid;
+    private AnimatorSet mShiftAnimateUpdate;
+    private boolean mContinueGameWinAnimation;
+    private AnimatorSet mGameWinAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +42,7 @@ public class GridAnimate2 extends Activity {
         mRand = new Random(1000);
 
         // TODO: read game win state and grid from saved instance state
-        mGameWon = false;
+        mContinueGameWinAnimation = true;
         //mGrid = Grid2.New(mRand);
         mGrid = Grid2.New(new int[] {
                 0, 0, 0, 0,
@@ -51,6 +53,27 @@ public class GridAnimate2 extends Activity {
 
         LinearLayout container = (LinearLayout)findViewById(R.id.container);
         container.addView(new View2048(this));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mShiftAnimateUpdate != null) {
+            mShiftAnimateUpdate.end();
+        }
+        if (mGameWinAnimation != null) {
+            mContinueGameWinAnimation = false;
+            mGameWinAnimation.cancel();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mGameWinAnimation != null) {
+            mContinueGameWinAnimation = true;
+            mGameWinAnimation.start();
+        }
     }
 
     private static class Block {
@@ -167,7 +190,6 @@ public class GridAnimate2 extends Activity {
         private Block[] mBlocks;
         private Bitmap mWinBitmap;
         private GestureDetector mGestureDetector;
-        private boolean mShifting;
 
         public View2048(Context context) {
             super(context);
@@ -183,7 +205,6 @@ public class GridAnimate2 extends Activity {
                 }
             }
             mGestureDetector = new GestureDetector(context, new UpdateGestureListener());
-            mShifting = false;
         }
 
         private float rowToY(int row) {
@@ -239,7 +260,7 @@ public class GridAnimate2 extends Activity {
                 } else {
                     moveAnimator = ObjectAnimator.ofFloat(block, "y", block.getY(), rowToY(endRow));
                 }
-                moveAnimator.setDuration(2000);
+                moveAnimator.setDuration(1500);
                 moveAnimator.addUpdateListener(View2048.this);
                 moveAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
@@ -300,7 +321,7 @@ public class GridAnimate2 extends Activity {
 
                 final Block newBlock = new Block(columnToX(column), rowToY(row), mBlockBitmaps.getBitmap(value));
                 mNewAnimator = ObjectAnimator.ofFloat(newBlock,"scale", 0.5f, 1.0f);
-                mNewAnimator.setDuration(1000);
+                mNewAnimator.setDuration(500);
                 mNewAnimator.addUpdateListener(View2048.this);
                 mNewAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
@@ -347,91 +368,89 @@ public class GridAnimate2 extends Activity {
 
             @Override
             public boolean onDown(MotionEvent event) {
-                return !mShifting;
+                // If mShiftAnimateUpdate is null (no current shift animation) keep the touch
+                // Otherwise already running shift animation, returns false to ignore touch
+                return mShiftAnimateUpdate == null;
             }
 
             @Override
             public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-                if (mGameWon) {
+                if (mGameWinAnimation != null) {
                     return false;
                 }
 
                 AnimateUpdateGridEventListener listener = new AnimateUpdateGridEventListener();
                 final Grid2 shifted = maybeShiftGrid(velocityX, velocityY, listener);
-                if (shifted == null || shifted.equals(mGrid)) {
+                if (shifted.equals(mGrid)) {
                     return false;
                 }
 
-                AnimatorSet animateUpdate = listener.createAnimateUpdatePlayer();
-                animateUpdate.addListener(new AnimatorListenerAdapter() {
+                mShiftAnimateUpdate = listener.createAnimateUpdatePlayer();
+                mShiftAnimateUpdate.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        mShifting = false;
                         mGrid = shifted;
+                        mShiftAnimateUpdate = null;
 
                         Log.d(TAG, "set new grid:");
                         Log.d(TAG, mGrid.toString());
 
                         if (mGrid.containsBlock(2048)) {
-                            mGameWon = true;
-                            createGameWonAnimation().start();
+                            mGameWinAnimation = createGameWinAnimation();
+                            mGameWinAnimation.start();
                         }
                     }
                 });
-
-                mShifting = true;
-                animateUpdate.start();
+                mShiftAnimateUpdate.start();
                 return true;
             }
 
             private Grid2 maybeShiftGrid(float velocityX, float velocityY, Grid2.EventListener listener) {
                 if (Math.abs(velocityX) < SHIFT_FLOOR && Math.abs(velocityY) < SHIFT_FLOOR) {
                     Log.d(TAG, String.format("no shift: velocityX = %f velocityY = %f", velocityX, velocityY));
-                    return null;
+                    return mGrid;
                 }
-
-                Grid2 shifted;
                 if (Math.abs(velocityX) > Math.abs(velocityY) && Math.abs(velocityX / velocityY) > 1.5f) {
                     if (velocityX < 0f) {
                         Log.d(TAG, "shift left");
-                        shifted = mGrid.shiftLeft(mRand, listener);
+                        return mGrid.shiftLeft(mRand, listener);
                     } else {
                         Log.d(TAG, "shift right");
-                        shifted = mGrid.shiftRight(mRand, listener);
+                        return mGrid.shiftRight(mRand, listener);
                     }
                 } else if (Math.abs(velocityY) > Math.abs(velocityX) && Math.abs(velocityY / velocityX) > 1.5f) {
                     if (velocityY < 0f) {
                         Log.d(TAG, "shift up");
-                        shifted = mGrid.shiftUp(mRand, listener);
+                        return mGrid.shiftUp(mRand, listener);
                     } else {
                         Log.d(TAG, "shift down");
-                        shifted = mGrid.shiftDown(mRand, listener);
+                        return mGrid.shiftDown(mRand, listener);
                     }
                 } else {
                     Log.d(TAG, String.format("no shift: velocityX = %f velocityY = %f", velocityX, velocityY));
-                    shifted = null;
+                    return mGrid;
                 }
-                return shifted;
             }
         }
 
-        private AnimatorSet createGameWonAnimation() {
+        private AnimatorSet createGameWinAnimation() {
             List<AnimatorSet> blockMoveAnimators = new ArrayList<AnimatorSet>(mBlocks.length);
             for (final Block block : mBlocks) {
                 if (block == null) {
                     continue;
                 }
 
-                final Animator.AnimatorListener[] moveEndListener = new Animator.AnimatorListener[1];
-                moveEndListener[0] = new AnimatorListenerAdapter() {
+                Animator.AnimatorListener moveEndListener = new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        AnimatorSet nextMoveAnimator = createMoveToRandomXYAnimation(block, moveEndListener[0]);
-                        nextMoveAnimator.start();
+                        if (mContinueGameWinAnimation) {
+                            AnimatorSet nextMoveAnimator = createMoveToRandomXYAnimation(block, this);
+                            nextMoveAnimator.start();
+                        }
                     }
                 };
 
-                AnimatorSet moveAnimator = createMoveToRandomXYAnimation(block, moveEndListener[0]);
+                AnimatorSet moveAnimator = createMoveToRandomXYAnimation(block, moveEndListener);
                 blockMoveAnimators.add(moveAnimator);
             }
             AnimatorSet allMoves = new AnimatorSet();
@@ -471,21 +490,37 @@ public class GridAnimate2 extends Activity {
 
         @Override
         protected void onDraw(Canvas canvas) {
+            Bitmap bitmap2048 = mBlockBitmaps.getBitmap(2048);
+            Block block2048 = null;
             for (Block block : mBlocks) {
                 if (block == null) {
                     continue;
                 }
-                canvas.save();
-                canvas.translate(block.getX(), block.getY());
-                canvas.scale(block.getScale(), block.getScale());
-                canvas.drawBitmap(block.getBitmap(), 0.0f, 0.0f, null);
-                canvas.restore();
+
+                // Save the first 2048 block and draw it last
+                // This so it draws over everything in the game win animation
+                if (block.getBitmap() == bitmap2048 && block2048 == null) {
+                    block2048 = block;
+                } else {
+                    drawBlock(block, canvas);
+                }
             }
-            drawWinBitmap(canvas);
+            drawGameWinBitmap(canvas);
+            if (block2048 != null) {
+                drawBlock(block2048, canvas);
+            }
         }
 
-        private void drawWinBitmap(Canvas canvas) {
-            if (!mGameWon) {
+        private void drawBlock(Block block, Canvas canvas) {
+            canvas.save();
+            canvas.translate(block.getX(), block.getY());
+            canvas.scale(block.getScale(), block.getScale());
+            canvas.drawBitmap(block.getBitmap(), 0.0f, 0.0f, null);
+            canvas.restore();
+        }
+
+        private void drawGameWinBitmap(Canvas canvas) {
+            if (mGameWinAnimation == null) {
                 return;
             }
             if (mWinBitmap == null) {
@@ -494,7 +529,6 @@ public class GridAnimate2 extends Activity {
             float left = (getWidth() - mWinBitmap.getWidth()) / 2f;
             float top = (getHeight() - mWinBitmap.getHeight()) / 2f;
             canvas.drawBitmap(mWinBitmap, left, top, null);
-
         }
     }
 }
