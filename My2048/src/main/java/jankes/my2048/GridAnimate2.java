@@ -125,7 +125,7 @@ public class GridAnimate2 extends Activity {
                 return bitmap256;
             } else if (blockValue == 512) {
                 Bitmap bitmap512 = BitmapFactory.decodeResource(getResources(), R.drawable.fivetwelve);
-                mValueToBitmap.append(8, bitmap512);
+                mValueToBitmap.append(512, bitmap512);
                 return bitmap512;
             } else if (blockValue == 1024) {
                 Bitmap bitmap1024 = BitmapFactory.decodeResource(getResources(), R.drawable.tentwentyfour);
@@ -133,7 +133,7 @@ public class GridAnimate2 extends Activity {
                 return bitmap1024;
             } else if (blockValue == 2048) {
                 Bitmap bitmap2048 = BitmapFactory.decodeResource(getResources(), R.drawable.twentyfortyeight);
-                mValueToBitmap.append(8, bitmap2048);
+                mValueToBitmap.append(2048, bitmap2048);
                 return bitmap2048;
             }
             else {
