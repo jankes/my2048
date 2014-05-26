@@ -1,7 +1,5 @@
 package jankes.my2048;
 
-import android.util.Log;
-
 import java.util.Arrays;
 import java.util.Random;
 
@@ -90,6 +88,15 @@ public class Grid2 {
             this.row = row;
             this.col = col;
         }
+    }
+
+    public boolean containsBlock(int value) {
+        for (int i = 0; i < 16; i++) {
+            if (mValues[i] == value) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Grid2 shiftLeft(Random rand, EventListener listener) {
