@@ -6,7 +6,9 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -60,6 +62,7 @@ public class GridAnimate2 extends Activity {
         super.onPause();
         if (mShiftAnimateUpdate != null) {
             mShiftAnimateUpdate.end();
+            mShiftAnimateUpdate = null;
         }
         if (mGameWinAnimation != null) {
             mContinueGameWinAnimation = false;
@@ -197,33 +200,8 @@ public class GridAnimate2 extends Activity {
         public View2048(Context context) {
             super(context);
             mBlockBitmaps = new BlockBitmapManager();
-            mBlocks = new Block[16];
-            for (int row = 1; row <= 4; row++) {
-                for (int col = 1; col <= 4; col++) {
-                    int value = mGrid.get(row, col);
-                    if (value != 0) {
-                        setBlock(row, col,
-                                new Block(columnToX(col), rowToY(row), mBlockBitmaps.getBitmap(value)));
-                    }
-                }
-            }
             mGestureDetector = new GestureDetector(context, new UpdateGestureListener());
-        }
-
-        private float rowToY(int row) {
-            return (row - 1) * 150f;
-        }
-
-        private float columnToX(int col) {
-            return (col - 1) * 150f;
-        }
-
-        private Block getBlock(int row, int column) {
-            return mBlocks[(4 * row) + column - 5];
-        }
-
-        private void setBlock(int row, int column, Block block) {
-            mBlocks[(4 * row) + column - 5] = block;
+            resetBlocks();
         }
 
         @Override
@@ -377,6 +355,30 @@ public class GridAnimate2 extends Activity {
             }
 
             @Override
+            public void onLongPress(MotionEvent event) {
+                new AlertDialog.Builder(GridAnimate2.this)
+                        .setMessage("New Game?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                if (mShiftAnimateUpdate != null) {
+                                    mShiftAnimateUpdate.end();
+                                    mShiftAnimateUpdate = null;
+                                }
+                                if (mGameWinAnimation != null) {
+                                    mGameWinAnimation.cancel();
+                                    mGameWinAnimation = null;
+                                }
+                                mGrid = Grid2.New(mRand);
+                                resetBlocks();
+                                invalidate();
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            }
+
+            @Override
             public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
                 if (mGameWinAnimation != null) {
                     return false;
@@ -434,6 +436,35 @@ public class GridAnimate2 extends Activity {
                     return mGrid;
                 }
             }
+        }
+
+        private void resetBlocks() {
+            mBlocks = new Block[16];
+            for (int row = 1; row <= 4; row++) {
+                for (int col = 1; col <= 4; col++) {
+                    int value = mGrid.get(row, col);
+                    if (value != 0) {
+                        setBlock(row, col,
+                                new Block(columnToX(col), rowToY(row), mBlockBitmaps.getBitmap(value)));
+                    }
+                }
+            }
+        }
+
+        private Block getBlock(int row, int column) {
+            return mBlocks[(4 * row) + column - 5];
+        }
+
+        private void setBlock(int row, int column, Block block) {
+            mBlocks[(4 * row) + column - 5] = block;
+        }
+
+        private float rowToY(int row) {
+            return (row - 1) * 150f;
+        }
+
+        private float columnToX(int col) {
+            return (col - 1) * 150f;
         }
 
         private AnimatorSet createGameWinAnimation() {
