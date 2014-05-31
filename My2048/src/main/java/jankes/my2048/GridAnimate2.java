@@ -131,7 +131,7 @@ public class GridAnimate2 extends Activity {
         SparseArray<Bitmap> mValueToBitmap;
 
         public BlockBitmapManager() {
-            mValueToBitmap = new SparseArray<Bitmap>(11);
+            mValueToBitmap = new SparseArray<>(11);
 
             Resources resources = getResources();
             Bitmap bitmap2 = BitmapFactory.decodeResource(resources, R.drawable.two);
@@ -468,7 +468,7 @@ public class GridAnimate2 extends Activity {
         }
 
         private AnimatorSet createGameWinAnimation() {
-            List<AnimatorSet> blockMoveAnimators = new ArrayList<AnimatorSet>(mBlocks.length);
+            List<AnimatorSet> blockMoveAnimators = new ArrayList<>(mBlocks.length);
             for (final Block block : mBlocks) {
                 if (block == null) {
                     continue;
