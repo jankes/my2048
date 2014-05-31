@@ -15,7 +15,6 @@ public class Grid2 {
     private static final int RIGHT = 2;
     private static final int DOWN =3;
 
-    // public for testing purposes
     public static Grid2 New(int[] values) {
         return new Grid2(values.clone());
     }
@@ -35,6 +34,10 @@ public class Grid2 {
         grid.addBlock(r);
         grid.addBlock(r);
         return grid;
+    }
+
+    public int[] getBlockValues() {
+        return mValues.clone();
     }
 
     @Override

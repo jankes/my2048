@@ -23,12 +23,16 @@ import android.widget.LinearLayout;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class GridAnimate2 extends Activity {
     private static final String TAG = "My2048";
+    private static final String GRID_FILENAME = "grid";
 
     private Random mRand;
     private Grid2 mGrid;
@@ -42,19 +46,45 @@ public class GridAnimate2 extends Activity {
         setContentView(R.layout.activity_game2048);
 
         mRand = new Random(1000);
-
-        // TODO: read game win state and grid from saved instance state
         mContinueGameWinAnimation = true;
-        //mGrid = Grid2.New(mRand);
-        mGrid = Grid2.New(new int[] {
-                0, 0, 0, 0,
-                2, 2, 0, 0,   // 0 2 2 4
-                1024, 1024, 0, 0,   // 2 2 4 0
-                4, 4, 2, 2,   // 8 2 2 4
-        });
+
+        int[] gridValues = readGridValues();
+        if (gridValues == null) {
+            mGrid = Grid2.New(mRand);
+        } else {
+            mGrid = Grid2.New(gridValues);
+        }
 
         LinearLayout container = (LinearLayout)findViewById(R.id.container);
         container.addView(new View2048(this));
+    }
+
+    private int[] readGridValues() {
+        byte[] gridBytes = readGridBytes();
+        if (gridBytes == null) {
+            return null;
+        }
+        int[] blockValues = new int[16];
+        ShortBuffer blockValueBuffer = ByteBuffer.wrap(gridBytes).asShortBuffer();
+        for (int i = 0; i < 16; i++) {
+            blockValues[i] = blockValueBuffer.get();
+        }
+        return blockValues;
+    }
+
+    private byte[] readGridBytes() {
+        try {
+            byte[] buffer = new byte[32];
+            int readCount = openFileInput(GRID_FILENAME).read(buffer, 0, 32);
+            if (readCount != 32) {
+                Log.e(TAG, "expected to read exactly 32 bytes for the stored grid, but instead read " + readCount);
+                return null;
+            }
+            return buffer;
+        }
+        catch (IOException e) {
+            return null;
+        }
     }
 
     @Override
@@ -67,6 +97,21 @@ public class GridAnimate2 extends Activity {
         if (mGameWinAnimation != null) {
             mContinueGameWinAnimation = false;
             mGameWinAnimation.cancel();
+        }
+        writeGrid();
+    }
+
+    private void writeGrid() {
+        int[] values = mGrid.getBlockValues();
+        ByteBuffer outputBuffer = ByteBuffer.allocate(32);
+        for (int i = 0; i < 16; i++) {
+            outputBuffer.putShort((short)values[i]);
+        }
+        try {
+            openFileOutput(GRID_FILENAME, MODE_PRIVATE).write(outputBuffer.array());
+        }
+        catch (IOException e) {
+            Log.e(TAG, "IOException attempting to save grid");
         }
     }
 
