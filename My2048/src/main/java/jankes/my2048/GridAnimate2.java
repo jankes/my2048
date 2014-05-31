@@ -202,6 +202,7 @@ public class GridAnimate2 extends Activity {
             mBlockBitmaps = new BlockBitmapManager();
             mGestureDetector = new GestureDetector(context, new UpdateGestureListener());
             resetBlocks();
+            winGameIf2048();
         }
 
         @Override
@@ -400,10 +401,7 @@ public class GridAnimate2 extends Activity {
                         Log.d(TAG, "set new grid:");
                         Log.d(TAG, mGrid.toString());
 
-                        if (mGrid.containsBlock(2048)) {
-                            mGameWinAnimation = createGameWinAnimation();
-                            mGameWinAnimation.start();
-                        }
+                        winGameIf2048();
                     }
                 });
                 mShiftAnimateUpdate.start();
@@ -465,6 +463,13 @@ public class GridAnimate2 extends Activity {
 
         private float columnToX(int col) {
             return (col - 1) * 150f;
+        }
+
+        private void winGameIf2048() {
+            if (mGrid.containsBlock(2048)) {
+                mGameWinAnimation = createGameWinAnimation();
+                mGameWinAnimation.start();
+            }
         }
 
         private AnimatorSet createGameWinAnimation() {
