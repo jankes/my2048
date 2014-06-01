@@ -13,6 +13,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
@@ -240,12 +242,20 @@ public class GridAnimate2 extends Activity {
         private BlockBitmapManager mBlockBitmaps;
         private Block[] mBlocks;
         private Bitmap mWinBitmap;
+        private Paint mBorderPaint;
         private GestureDetector mGestureDetector;
 
         public View2048(Context context) {
             super(context);
             mBlockBitmaps = new BlockBitmapManager();
             mGestureDetector = new GestureDetector(context, new UpdateGestureListener());
+            mBorderPaint = new Paint();
+            mBorderPaint.setColor(Color.BLUE);
+            mBorderPaint.setStyle(Paint.Style.FILL);
+        }
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldW, int oldH) {
             resetBlocks();
             winGameIf2048();
         }
@@ -503,11 +513,11 @@ public class GridAnimate2 extends Activity {
         }
 
         private float rowToY(int row) {
-            return (row - 1) * 150f;
+            return ((getHeight() - 600) / 2) + (row - 1) * 150f;
         }
 
         private float columnToX(int col) {
-            return (col - 1) * 150f;
+            return ((getWidth() - 600) / 2) + (col - 1) * 150f;
         }
 
         private void winGameIf2048() {
@@ -574,24 +584,26 @@ public class GridAnimate2 extends Activity {
 
         @Override
         protected void onDraw(Canvas canvas) {
+            drawBorder(canvas);
+            drawBlocks(canvas, false);
+            drawGameWinBitmap(canvas);
+            drawBlocks(canvas, true);
+        }
+
+        // Either draws all the 2048 blocks (draw2048 == true), or all the others (draw2048 == false)
+        // This allows a separate pass to draw blocks with 2048 value after drawing the game win
+        // bitmap, so the 2048 block(s) draws over everything in the game win animation
+        private void drawBlocks(Canvas canvas, boolean draw2048) {
             Bitmap bitmap2048 = mBlockBitmaps.getBitmap(2048);
-            Block block2048 = null;
             for (Block block : mBlocks) {
                 if (block == null) {
                     continue;
                 }
-
-                // Save the first 2048 block and draw it last
-                // This so it draws over everything in the game win animation
-                if (block.getBitmap() == bitmap2048 && block2048 == null) {
-                    block2048 = block;
-                } else {
+                if (draw2048 && block.getBitmap() == bitmap2048) {
+                    drawBlock(block, canvas);
+                } else if (!draw2048 && block.getBitmap() != bitmap2048) {
                     drawBlock(block, canvas);
                 }
-            }
-            drawGameWinBitmap(canvas);
-            if (block2048 != null) {
-                drawBlock(block2048, canvas);
             }
         }
 
@@ -601,6 +613,25 @@ public class GridAnimate2 extends Activity {
             canvas.scale(block.getScale(), block.getScale());
             canvas.drawBitmap(block.getBitmap(), 0.0f, 0.0f, null);
             canvas.restore();
+        }
+
+        private void drawBorder(Canvas canvas) {
+            int left = (getWidth() - 600) / 2 - 20;
+            int top = (getHeight() - 600) / 2 - 20;
+            int right = (getWidth() / 2) + 320;
+            int bottom = top + 16;
+
+            // upper horizontal
+            canvas.drawRect(left, top, right, bottom, mBorderPaint);
+
+            // left vertical
+            canvas.drawRect(left, bottom, left + 16, top + 640, mBorderPaint);
+
+            // lower horizontal
+            canvas.drawRect(left, top + 624, right, top + 640, mBorderPaint);
+
+            // right vertical
+            canvas.drawRect(right - 16, bottom, right, top + 640, mBorderPaint);
         }
 
         private void drawGameWinBitmap(Canvas canvas) {
