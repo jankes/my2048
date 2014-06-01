@@ -23,19 +23,16 @@ import android.widget.LinearLayout;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Game2048 extends Activity {
     public static final String TAG = "My2048";
-    private static final String GRID_FILENAME = "grid";
 
     private Random mRand;
     private Grid mGrid;
+    private GridSaver mGridSaver;
     private AnimatorSet mShiftAnimateUpdate;
     private boolean mContinueGameWinAnimation;
     private AnimatorSet mGameWinAnimation;
@@ -48,43 +45,14 @@ public class Game2048 extends Activity {
         mRand = new Random(1000);
         mContinueGameWinAnimation = true;
 
-        int[] gridValues = readGridValues();
-        if (gridValues == null) {
+        mGridSaver = new GridSaver(this);
+        mGrid = mGridSaver.restoreGrid();
+        if (mGrid == null) {
             mGrid = Grid.New(mRand);
-        } else {
-            mGrid = Grid.New(gridValues);
         }
 
         LinearLayout container = (LinearLayout)findViewById(R.id.container);
         container.addView(new View2048(this));
-    }
-
-    private int[] readGridValues() {
-        byte[] gridBytes = readGridBytes();
-        if (gridBytes == null) {
-            return null;
-        }
-        int[] blockValues = new int[16];
-        ShortBuffer blockValueBuffer = ByteBuffer.wrap(gridBytes).asShortBuffer();
-        for (int i = 0; i < 16; i++) {
-            blockValues[i] = blockValueBuffer.get();
-        }
-        return blockValues;
-    }
-
-    private byte[] readGridBytes() {
-        try {
-            byte[] buffer = new byte[32];
-            int readCount = openFileInput(GRID_FILENAME).read(buffer, 0, 32);
-            if (readCount != 32) {
-                Log.e(TAG, "expected to read exactly 32 bytes for the stored grid, but instead read " + readCount);
-                return null;
-            }
-            return buffer;
-        }
-        catch (IOException e) {
-            return null;
-        }
     }
 
     @Override
@@ -98,21 +66,7 @@ public class Game2048 extends Activity {
             mContinueGameWinAnimation = false;
             mGameWinAnimation.cancel();
         }
-        writeGrid();
-    }
-
-    private void writeGrid() {
-        int[] values = mGrid.getBlockValues();
-        ByteBuffer outputBuffer = ByteBuffer.allocate(32);
-        for (int i = 0; i < 16; i++) {
-            outputBuffer.putShort((short)values[i]);
-        }
-        try {
-            openFileOutput(GRID_FILENAME, MODE_PRIVATE).write(outputBuffer.array());
-        }
-        catch (IOException e) {
-            Log.e(TAG, "IOException attempting to save grid");
-        }
+        mGridSaver.saveGrid(mGrid);
     }
 
     @Override
