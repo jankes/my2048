@@ -297,7 +297,7 @@ public class GridAnimate2 extends Activity {
                 } else {
                     moveAnimator = ObjectAnimator.ofFloat(block, "y", block.getY(), rowToY(endRow));
                 }
-                moveAnimator.setDuration(1500);
+                moveAnimator.setDuration(1000);
                 moveAnimator.addUpdateListener(View2048.this);
                 moveAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
@@ -330,7 +330,7 @@ public class GridAnimate2 extends Activity {
             private ObjectAnimator createMergeAnimator(final int srcRow, final int srcColumn, final int dstRow, final int dstColumn, int newValue) {
                 final Block newBlock = new Block(columnToX(dstColumn), rowToY(dstRow), mBlockBitmaps.getBitmap(newValue));
                 ObjectAnimator mergeAnimator = ObjectAnimator.ofFloat(newBlock, "scale", 1.0f, 1.25f);
-                mergeAnimator.setDuration(500);
+                mergeAnimator.setDuration(250);
                 mergeAnimator.setRepeatMode(ValueAnimator.REVERSE);
                 mergeAnimator.setRepeatCount(1);
                 mergeAnimator.addUpdateListener(View2048.this);
@@ -358,7 +358,7 @@ public class GridAnimate2 extends Activity {
 
                 final Block newBlock = new Block(columnToX(column), rowToY(row), mBlockBitmaps.getBitmap(value));
                 mNewAnimator = ObjectAnimator.ofFloat(newBlock,"scale", 0.5f, 1.0f);
-                mNewAnimator.setDuration(500);
+                mNewAnimator.setDuration(250);
                 mNewAnimator.addUpdateListener(View2048.this);
                 mNewAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
