@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -17,7 +16,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,7 +31,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Game2048 extends Activity {
-    private static final String TAG = "My2048";
+    public static final String TAG = "My2048";
     private static final String GRID_FILENAME = "grid";
 
     private Random mRand;
@@ -126,70 +124,6 @@ public class Game2048 extends Activity {
         }
     }
 
-    private class BlockBitmapManager {
-        SparseArray<Bitmap> mValueToBitmap;
-
-        public BlockBitmapManager() {
-            mValueToBitmap = new SparseArray<>(11);
-
-            Resources resources = getResources();
-            Bitmap bitmap2 = BitmapFactory.decodeResource(resources, R.drawable.two);
-            mValueToBitmap.append(2, bitmap2);
-
-            Bitmap bitmap4 = BitmapFactory.decodeResource(resources, R.drawable.four);
-            mValueToBitmap.append(4, bitmap4);
-        }
-
-        public Bitmap getBitmap(int blockValue) {
-            Bitmap bitmap = mValueToBitmap.get(blockValue, null);
-            if (bitmap != null) {
-                return bitmap;
-            }
-            if (blockValue == 8) {
-                Bitmap bitmap8 = BitmapFactory.decodeResource(getResources(), R.drawable.eight);
-                mValueToBitmap.append(8, bitmap8);
-                return bitmap8;
-            } else if (blockValue == 16) {
-                Bitmap bitmap16 = BitmapFactory.decodeResource(getResources(), R.drawable.sixteen);
-                mValueToBitmap.append(16, bitmap16);
-                return bitmap16;
-            } else if (blockValue == 32) {
-                Bitmap bitmap32 = BitmapFactory.decodeResource(getResources(), R.drawable.thirtytwo);
-                mValueToBitmap.append(32, bitmap32);
-                return bitmap32;
-            } else if (blockValue == 64) {
-                Bitmap bitmap64 = BitmapFactory.decodeResource(getResources(), R.drawable.sixtyfour);
-                mValueToBitmap.append(64, bitmap64);
-                return bitmap64;
-            } else if (blockValue == 128) {
-                Bitmap bitmap128 = BitmapFactory.decodeResource(getResources(), R.drawable.onetwentyeight);
-                mValueToBitmap.append(128, bitmap128);
-                return bitmap128;
-            } else if (blockValue == 256) {
-                Bitmap bitmap256 = BitmapFactory.decodeResource(getResources(), R.drawable.twofiftysix);
-                mValueToBitmap.append(256, bitmap256);
-                return bitmap256;
-            } else if (blockValue == 512) {
-                Bitmap bitmap512 = BitmapFactory.decodeResource(getResources(), R.drawable.fivetwelve);
-                mValueToBitmap.append(512, bitmap512);
-                return bitmap512;
-            } else if (blockValue == 1024) {
-                Bitmap bitmap1024 = BitmapFactory.decodeResource(getResources(), R.drawable.tentwentyfour);
-                mValueToBitmap.append(1024, bitmap1024);
-                return bitmap1024;
-            } else if (blockValue == 2048) {
-                Bitmap bitmap2048 = BitmapFactory.decodeResource(getResources(), R.drawable.twentyfortyeight);
-                mValueToBitmap.append(2048, bitmap2048);
-                return bitmap2048;
-            }
-            else {
-                String msg = "no bitmap for value " + blockValue;
-                Log.e(TAG, msg);
-                throw new RuntimeException(msg);
-            }
-        }
-    }
-
     private class View2048 extends View implements ValueAnimator.AnimatorUpdateListener {
         private BlockBitmapManager mBlockBitmaps;
         private Block[] mBlocks;
@@ -199,7 +133,7 @@ public class Game2048 extends Activity {
 
         public View2048(Context context) {
             super(context);
-            mBlockBitmaps = new BlockBitmapManager();
+            mBlockBitmaps = new BlockBitmapManager(context);
             mGestureDetector = new GestureDetector(context, new UpdateGestureListener());
             mBorderPaint = new Paint();
             mBorderPaint.setColor(Color.BLUE);
