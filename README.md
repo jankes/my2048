@@ -1,5 +1,7 @@
 ## (Another) clone of 2048 for Android
 
+![screen shot](https://raw.github.com/jankes/my2048/master/2048.png)
+
 ### About
 
 This is my implementation of [2048](http://gabrielecirulli.github.io/2048/) for Android. It's a fun side project to learn some Android APIs.
