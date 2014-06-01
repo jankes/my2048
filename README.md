@@ -24,6 +24,6 @@ Compiling depends on API level 19 (Android SDK Platform 4.4.2) and Android SDK B
 I've tested running on an AVD created from the Galaxy Nexus generic device definition (4.7 inch screen, 720x1280 normal xhdpi)
 and my Galaxy S3 Phone
 
-Note I haven't tried building/running the project in an environment outside my local machine.  
+Note I haven't tried building the project in an environment outside my local machine.  
 However, assuming you have Android Studio and the proper Android SDK stuff installed, you could probably just
 clone this repository, build, then run in the simulator or on your phone.
