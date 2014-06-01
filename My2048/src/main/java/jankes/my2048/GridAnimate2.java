@@ -37,7 +37,7 @@ public class GridAnimate2 extends Activity {
     private static final String GRID_FILENAME = "grid";
 
     private Random mRand;
-    private Grid2 mGrid;
+    private Grid mGrid;
     private AnimatorSet mShiftAnimateUpdate;
     private boolean mContinueGameWinAnimation;
     private AnimatorSet mGameWinAnimation;
@@ -52,9 +52,9 @@ public class GridAnimate2 extends Activity {
 
         int[] gridValues = readGridValues();
         if (gridValues == null) {
-            mGrid = Grid2.New(mRand);
+            mGrid = Grid.New(mRand);
         } else {
-            mGrid = Grid2.New(gridValues);
+            mGrid = Grid.New(gridValues);
         }
 
         LinearLayout container = (LinearLayout)findViewById(R.id.container);
@@ -265,7 +265,7 @@ public class GridAnimate2 extends Activity {
             invalidate();
         }
 
-        private class AnimateUpdateGridEventListener implements Grid2.EventListener {
+        private class AnimateUpdateGridEventListener implements Grid.EventListener {
             final AnimatorSet[] mAnimators = new AnimatorSet[4];
             final AnimatorSet.Builder[] mBuilders = new AnimatorSet.Builder[4];
             ObjectAnimator mNewAnimator;
@@ -427,7 +427,7 @@ public class GridAnimate2 extends Activity {
                             mGameWinAnimation.cancel();
                             mGameWinAnimation = null;
                         }
-                        mGrid = Grid2.New(mRand);
+                        mGrid = Grid.New(mRand);
                         resetBlocks();
                         invalidate();
                    }
@@ -449,7 +449,7 @@ public class GridAnimate2 extends Activity {
                                 mGameWinAnimation.cancel();
                                 mGameWinAnimation = null;
                             }
-                            mGrid = Grid2.New(new int[] {
+                            mGrid = Grid.New(new int[]{
                                     0, 0, 0, 0,
                                     2, 2, 0, 0,
                                     1024, 1024, 0, 0,
@@ -478,7 +478,7 @@ public class GridAnimate2 extends Activity {
                 }
 
                 AnimateUpdateGridEventListener listener = new AnimateUpdateGridEventListener();
-                final Grid2 shifted = maybeShiftGrid(velocityX, velocityY, listener);
+                final Grid shifted = maybeShiftGrid(velocityX, velocityY, listener);
                 if (shifted.equals(mGrid)) {
                     return false;
                 }
@@ -500,7 +500,7 @@ public class GridAnimate2 extends Activity {
                 return true;
             }
 
-            private Grid2 maybeShiftGrid(float velocityX, float velocityY, Grid2.EventListener listener) {
+            private Grid maybeShiftGrid(float velocityX, float velocityY, Grid.EventListener listener) {
                 if (Math.abs(velocityX) < SHIFT_FLOOR && Math.abs(velocityY) < SHIFT_FLOOR) {
                     Log.d(TAG, String.format("no shift: velocityX = %f velocityY = %f", velocityX, velocityY));
                     return mGrid;

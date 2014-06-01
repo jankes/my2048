@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import jankes.my2048.Grid2;
+import jankes.my2048.Grid;
 
-public class Grid2Test extends InstrumentationTestCase {
+public class GridTest extends InstrumentationTestCase {
 
     // Deterministic grid shifting depends on a constant random seed value
     // The test cases expected shifted grids depend on the seed
@@ -89,11 +89,11 @@ public class Grid2Test extends InstrumentationTestCase {
 
     private static class ShiftTestCase {
         public final String name;
-        public final Grid2 before;
-        public final Grid2 after;
+        public final Grid before;
+        public final Grid after;
         public final GridEvent[] expectedEvents;
 
-        public ShiftTestCase(String name, Grid2 before, Grid2 after, GridEvent[] expectedEvents) {
+        public ShiftTestCase(String name, Grid before, Grid after, GridEvent[] expectedEvents) {
             this.name = name;
             this.before = before;
             this.after = after;
@@ -105,13 +105,13 @@ public class Grid2Test extends InstrumentationTestCase {
         return new ShiftTestCase[] {
                 new ShiftTestCase(
                         "single block",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 2, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 2, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
@@ -121,13 +121,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "two block, no move no merge",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 2, 4, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 2, 4, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
@@ -137,13 +137,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one merge",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 2, 2, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 4, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -155,13 +155,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one merge test 2",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 2, 8, 2, 2,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 2, 8, 4, 0,
                                 2, 0, 0, 0,
@@ -173,13 +173,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one move",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 2, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -191,13 +191,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "two moves",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 2, 4,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 2, 4, 0, 0,
                                 2, 0, 0, 0,
@@ -209,13 +209,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "move move merge",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 2, 2,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 4, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -228,13 +228,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "merge move merge",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 2, 2, 4, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 8, 0, 0, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -247,13 +247,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "merge move move merge",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 2, 2, 2, 2,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 4, 4, 0, 0,
                                 2, 0, 0, 0,
@@ -266,16 +266,16 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "merge move merge move merge",
-                        Grid2.New(new int[] {
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 2, 2, 4, 8,
                         }),
-                        Grid2.New(new int[] {
-                                0,  0, 0, 0,
-                                0,  0, 0, 0,
-                                2,  0, 0, 0,
+                        Grid.New(new int[]{
+                                0, 0, 0, 0,
+                                0, 0, 0, 0,
+                                2, 0, 0, 0,
                                 16, 0, 0, 0,
                         }),
                         new GridEvent[] {
@@ -291,13 +291,13 @@ public class Grid2Test extends InstrumentationTestCase {
         return new ShiftTestCase[]{
                 new ShiftTestCase(
                         "no move no merge",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 2, 4, 0, 2,
                                 0, 0, 0, 4,
                                 0, 0, 0, 2,
                                 0, 0, 0, 4,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 2, 4, 0, 2,
                                 0, 0, 0, 4,
                                 0, 0, 0, 2,
@@ -308,13 +308,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one merge",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 2, 0, 0,
                                 0, 2, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 4, 0, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -327,13 +327,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one move",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 2, 0,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 2, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -350,13 +350,13 @@ public class Grid2Test extends InstrumentationTestCase {
         return new ShiftTestCase[]{
                 new ShiftTestCase(
                         "no move no merge",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 2,
                                 0, 2, 8, 4,
                                 0, 0, 0, 2,
                                 0, 0, 0, 4,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 2,
                                 0, 2, 8, 4,
                                 0, 0, 0, 2,
@@ -367,13 +367,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one merge",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 2, 2,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 4,
@@ -386,13 +386,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one move",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 2, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 2,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -409,13 +409,13 @@ public class Grid2Test extends InstrumentationTestCase {
         return new ShiftTestCase[]{
                 new ShiftTestCase(
                         "no move no merge",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 2,
                                 0, 0, 0, 4,
                                 0, 0, 0, 2,
                                 4, 2, 0, 4,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 2,
                                 0, 0, 0, 4,
                                 0, 0, 0, 2,
@@ -426,13 +426,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one merge",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 2, 0, 0,
                                 0, 2, 0, 0,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -445,13 +445,13 @@ public class Grid2Test extends InstrumentationTestCase {
 
                 new ShiftTestCase(
                         "one move",
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 2, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                         }),
-                        Grid2.New(new int[]{
+                        Grid.New(new int[]{
                                 0, 0, 0, 0,
                                 0, 0, 0, 0,
                                 2, 0, 0, 0,
@@ -464,8 +464,8 @@ public class Grid2Test extends InstrumentationTestCase {
         };
     }
 
-    private static class LoggingGridEventListener implements Grid2.EventListener {
-        private List<GridEvent> mEventList = new ArrayList<GridEvent>(4);
+    private static class LoggingGridEventListener implements Grid.EventListener {
+        private List<GridEvent> mEventList = new ArrayList<>(4);
 
         @Override
         public void blockMoved(int startRow, int startColumn, int endRow, int endColumn) {
@@ -488,13 +488,13 @@ public class Grid2Test extends InstrumentationTestCase {
     }
 
     private interface ShiftGridAction {
-        Grid2 shift(Grid2 g, Random rand, LoggingGridEventListener listener);
+        Grid shift(Grid g, Random rand, LoggingGridEventListener listener);
     }
 
     public void testShiftLeft() {
         runTestCases(getShiftLeftTestCases(), new ShiftGridAction() {
             @Override
-            public Grid2 shift(Grid2 g, Random rand, LoggingGridEventListener listener) {
+            public Grid shift(Grid g, Random rand, LoggingGridEventListener listener) {
                 return g.shiftLeft(rand, listener);
             }
         });
@@ -503,7 +503,7 @@ public class Grid2Test extends InstrumentationTestCase {
     public void testShiftUp() {
         runTestCases(getShiftUpTestCases(), new ShiftGridAction() {
             @Override
-            public Grid2 shift(Grid2 g, Random rand, LoggingGridEventListener listener) {
+            public Grid shift(Grid g, Random rand, LoggingGridEventListener listener) {
                 return g.shiftUp(rand, listener);
             }
         });
@@ -512,7 +512,7 @@ public class Grid2Test extends InstrumentationTestCase {
     public void testShiftRight() {
         runTestCases(getShiftRightTestCases(), new ShiftGridAction() {
             @Override
-            public Grid2 shift(Grid2 g, Random rand, LoggingGridEventListener listener) {
+            public Grid shift(Grid g, Random rand, LoggingGridEventListener listener) {
                 return g.shiftRight(rand, listener);
             }
         });
@@ -521,7 +521,7 @@ public class Grid2Test extends InstrumentationTestCase {
     public void testShiftDown() {
         runTestCases(getShiftDownTestCases(), new ShiftGridAction() {
             @Override
-            public Grid2 shift(Grid2 g, Random rand, LoggingGridEventListener listener) {
+            public Grid shift(Grid g, Random rand, LoggingGridEventListener listener) {
                 return g.shiftDown(rand, listener);
             }
         });

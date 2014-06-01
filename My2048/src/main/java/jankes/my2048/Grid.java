@@ -3,10 +3,10 @@ package jankes.my2048;
 import java.util.Arrays;
 import java.util.Random;
 
-public class Grid2 {
+public class Grid {
     private final int[] mValues;
 
-    private Grid2(int[] values) {
+    private Grid(int[] values) {
         mValues = values;
     }
 
@@ -15,8 +15,8 @@ public class Grid2 {
     private static final int RIGHT = 2;
     private static final int DOWN =3;
 
-    public static Grid2 New(int[] values) {
-        return new Grid2(values.clone());
+    public static Grid New(int[] values) {
+        return new Grid(values.clone());
     }
 
     public interface EventListener {
@@ -25,8 +25,8 @@ public class Grid2 {
         void newBlock(int row, int column, int value);
     }
 
-    public static Grid2 New(Random r) {
-        Grid2 grid = new Grid2(new int[] {
+    public static Grid New(Random r) {
+        Grid grid = new Grid(new int[] {
                 0, 0, 0, 0,
                 0, 0, 0, 0,
                 0, 0, 0, 0,
@@ -45,10 +45,10 @@ public class Grid2 {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Grid2)) {
+        if (!(obj instanceof Grid)) {
             return false;
         }
-        Grid2 other = (Grid2)obj;
+        Grid other = (Grid)obj;
         return Arrays.equals(mValues, other.mValues);
     }
 
@@ -102,24 +102,24 @@ public class Grid2 {
         return false;
     }
 
-    public Grid2 shiftLeft(Random rand, EventListener listener) {
+    public Grid shiftLeft(Random rand, EventListener listener) {
         return shift(LEFT, rand, listener);
     }
 
-    public Grid2 shiftUp(Random rand, EventListener listener) {
+    public Grid shiftUp(Random rand, EventListener listener) {
         return shift(UP, rand, listener);
     }
 
-    public Grid2 shiftRight(Random rand, EventListener listener) {
+    public Grid shiftRight(Random rand, EventListener listener) {
         return shift(RIGHT, rand, listener);
     }
 
-    public Grid2 shiftDown(Random rand, EventListener listener) {
+    public Grid shiftDown(Random rand, EventListener listener) {
         return shift(DOWN, rand, listener);
     }
 
-    private Grid2 shift(int transform, Random rand, EventListener listener) {
-        Grid2 shifted = New(mValues);
+    private Grid shift(int transform, Random rand, EventListener listener) {
+        Grid shifted = New(mValues);
         boolean moveOrMerge = false;
         for (int row = 1; row <= 4; row++) {
             for (int col = 2; col <= 4; col++) {
