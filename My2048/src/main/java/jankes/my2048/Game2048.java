@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GridAnimate2 extends Activity {
+public class Game2048 extends Activity {
     private static final String TAG = "My2048";
     private static final String GRID_FILENAME = "grid";
 
@@ -413,7 +413,7 @@ public class GridAnimate2 extends Activity {
 
             @Override
             public void onLongPress(MotionEvent event) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(GridAnimate2.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(Game2048.this);
                 builder.setMessage("New Game?");
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
