@@ -402,6 +402,7 @@ public class GridAnimate2 extends Activity {
 
         private class UpdateGestureListener extends GestureDetector.SimpleOnGestureListener {
             private static final float SHIFT_FLOOR = 500f;
+            private int mNegativeCount = 0;
 
             @Override
             public boolean onDown(MotionEvent event) {
@@ -412,30 +413,66 @@ public class GridAnimate2 extends Activity {
 
             @Override
             public void onLongPress(MotionEvent event) {
-                new AlertDialog.Builder(GridAnimate2.this)
-                        .setMessage("New Game?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                if (mShiftAnimateUpdate != null) {
-                                    mShiftAnimateUpdate.end();
-                                    mShiftAnimateUpdate = null;
-                                }
-                                if (mGameWinAnimation != null) {
-                                    mGameWinAnimation.cancel();
-                                    mGameWinAnimation = null;
-                                }
-                                mGrid = Grid2.New(mRand);
-                                resetBlocks();
-                                invalidate();
+                AlertDialog.Builder builder = new AlertDialog.Builder(GridAnimate2.this);
+                builder.setMessage("New Game?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mNegativeCount = 0;
+                        if (mShiftAnimateUpdate != null) {
+                            mShiftAnimateUpdate.end();
+                            mShiftAnimateUpdate = null;
+                        }
+                        if (mGameWinAnimation != null) {
+                            mGameWinAnimation.cancel();
+                            mGameWinAnimation = null;
+                        }
+                        mGrid = Grid2.New(mRand);
+                        resetBlocks();
+                        invalidate();
+                   }
+                });
+                if (mNegativeCount == 2) {
+                    // Cheat code!
+                    // If you do 3 long presses in a row, each time answering "No" when asked if
+                    // you want to start a new game puts the game into a state one move away from
+                    // a win
+                    mNegativeCount = 0;
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (mShiftAnimateUpdate != null) {
+                                mShiftAnimateUpdate.end();
+                                mShiftAnimateUpdate = null;
                             }
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
+                            if (mGameWinAnimation != null) {
+                                mGameWinAnimation.cancel();
+                                mGameWinAnimation = null;
+                            }
+                            mGrid = Grid2.New(new int[] {
+                                    0, 0, 0, 0,
+                                    2, 2, 0, 0,
+                                    1024, 1024, 0, 0,
+                                    4, 4, 2, 2,
+                            });
+                            resetBlocks();
+                            invalidate();
+                        }
+                    });
+                } else {
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            mNegativeCount += 1;
+                        }
+                    });
+                }
+                builder.show();
             }
 
             @Override
             public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+                mNegativeCount = 0;
+
                 if (mGameWinAnimation != null) {
                     return false;
                 }
